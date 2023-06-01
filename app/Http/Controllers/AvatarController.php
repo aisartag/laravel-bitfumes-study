@@ -51,12 +51,11 @@ class AvatarController extends Controller
 
         $filename = Str::random(25);
 
-        Storage::disk('public')->put("avatars/{$request->user()->id}/$filename.jpg",$contents);
+        Storage::disk('public')->put("avatars/{$request->user()->id}/$filename.jpg", $contents);
 
-        if($oldAvatar = $request->user()->avatar){
+        if ($oldAvatar = $request->user()->avatar) {
             Storage::disk('public')->delete("avatars/{$request->user()->id}/$oldAvatar");
         }
-
 
         auth()->user()->update(['avatar' => "$filename.jpg"]);
 

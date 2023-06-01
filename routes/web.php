@@ -2,11 +2,11 @@
 
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\AvatarController;
-
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 
-use OpenAI\Laravel\Facades\OpenAI;
+use Laravel\Socialite\Facades\Socialite;
 
 
 
@@ -34,8 +34,28 @@ Route::middleware('auth')->group(function () {
 
     Route::patch('/profile/avatar', [AvatarController::class, 'update'])->name('profile.avatar');
     Route::post('/profile/avatar/ai', [AvatarController::class, 'generate'])->name('profile.avatar.ai');
-
 });
 
 require __DIR__ . '/auth.php';
 
+
+
+Route::post('/auth/redirect', function () {
+    return Socialite::driver('github')->redirect();
+})->name('login.github');
+
+Route::get('/auth/callback', function () {
+    $userGithub = Socialite::driver('github')->stateless()->user();
+
+    //  dd($userGithub);
+
+    // updateOrCreate
+    $user =  User::firstOrCreate(['email' => $userGithub->email], [
+        'name' => $userGithub->name ?? $userGithub->nickname,
+        'password' => 'password',
+    ]);
+
+    Auth::login($user);
+
+    return redirect('/dashboard');
+});
